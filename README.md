@@ -46,7 +46,7 @@ Tested with version 2.0.0
 Clone the repository and catkin_make:
 ```
     cd ~/catkin_ws/src
-    git clone https://github.com/HKUST-Aerial-Robotics/VINS-Fusion.git
+    git clone https://github.com/djramakrishna/VINS-Fusion.git
     cd ../
     catkin_make
     source ~/catkin_ws/devel/setup.bash

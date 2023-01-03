@@ -20,6 +20,12 @@ find_package(Ceres REQUIRED)
 include_directories(${CERES_INCLUDE_DIRS})
 
 
+install(DIRECTORY include/camodocal
+  DESTINATION include
+  PATTERN ".svn" EXCLUDE
+) 
+
+
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES camera_models

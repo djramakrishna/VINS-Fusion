@@ -34,7 +34,7 @@ catkin_package(
 
 # include_directories("include")
 
-add_executable(Calibrations
+add_executable(Calibrations 
     src/intrinsic_calib.cc
     src/chessboard/Chessboard.cc
     src/calib/CameraCalibration.cc

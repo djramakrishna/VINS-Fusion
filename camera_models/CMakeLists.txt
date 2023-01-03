@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5.1)
 project(camera_models)
 
 set(CMAKE_BUILD_TYPE "Release")
@@ -20,11 +20,10 @@ find_package(Ceres REQUIRED)
 include_directories(${CERES_INCLUDE_DIRS})
 
 
-install(DIRECTORY include/camodocal
-  DESTINATION include
-  PATTERN ".svn" EXCLUDE
-) 
-
+include_directories(
+    include
+    ${catkin_INCLUDE_DIRS}
+)
 
 catkin_package(
     INCLUDE_DIRS include
@@ -33,13 +32,9 @@ catkin_package(
 #    DEPENDS system_lib
     )
 
-include_directories(
-    ${catkin_INCLUDE_DIRS}
-    )
+# include_directories("include")
 
-include_directories("include")
-
-add_executable(Calibrations 
+add_executable(Calibrations
     src/intrinsic_calib.cc
     src/chessboard/Chessboard.cc
     src/calib/CameraCalibration.cc
@@ -72,3 +67,10 @@ add_library(camera_models
 
 target_link_libraries(Calibrations ${Boost_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(camera_models ${Boost_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+
+message("INCLUDE DESTINATION" ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+install(DIRECTORY include/camodocal
+  DESTINATION include
+  PATTERN ".svn" EXCLUDE
+)

@@ -15,6 +15,7 @@
 #include <thread>
 #include <mutex>
 #include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include "estimator/estimator.h"
@@ -246,6 +247,12 @@ int main(int argc, char **argv)
 #endif
 
     ROS_WARN("waiting for image and imu...");
+    // boost::shared_ptr<sensor_msgs::Imu const> imu_msg;
+    boost::shared_ptr<sensor_msgs::Imu const> init_imu_msg = ros::topic::waitForMessage<sensor_msgs::Imu>(IMU_TOPIC);
+    boost::shared_ptr<sensor_msgs::Image const> init_image0_msg = ros::topic::waitForMessage<sensor_msgs::Image>(IMAGE0_TOPIC);
+    boost::shared_ptr<sensor_msgs::Image const> init_image1_msg = ros::topic::waitForMessage<sensor_msgs::Image>(IMAGE1_TOPIC);
+    // imu_msg = ros::topic::waitForMessage<sensor_msgs::Imu>(IMU_TOPIC);
+    // sharedEdge = ros::topic::waitForMessage<nav_msgs::Path>("/path_planned/edge",create_path);
 
     registerPub(n);
 

@@ -45,6 +45,7 @@ catkin_package(
       ${CERES_INCLUDE_DIRS}
   LIBRARIES vins
   CATKIN_DEPENDS
+    message_runtime
     roscpp
     std_msgs
     geometry_msgs

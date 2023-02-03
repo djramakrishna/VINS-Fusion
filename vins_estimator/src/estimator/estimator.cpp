@@ -28,13 +28,16 @@ Estimator::~Estimator()
 
 void Estimator::clearState()
 {
+    ROS_INFO("Clear State begins");
     mProcess.lock();
+    ROS_INFO("mProcess.lock() Initiated");
     while(!accBuf.empty())
         accBuf.pop();
     while(!gyrBuf.empty())
         gyrBuf.pop();
     while(!featureBuf.empty())
         featureBuf.pop();
+    ROS_INFO("All Queues emptied");
 
     prevTime = -1;
     curTime = 0;
@@ -61,12 +64,16 @@ void Estimator::clearState()
         }
         pre_integrations[i] = nullptr;
     }
+    
+    ROS_INFO("Done Setting Window buffers to zero");
 
     for (int i = 0; i < NUM_OF_CAM; i++)
     {
         tic[i] = Vector3d::Zero();
         ric[i] = Matrix3d::Identity();
     }
+
+    ROS_INFO("Done Setting Window buffers to zero");
 
     first_imu = false,
     sum_of_back = 0;
@@ -84,6 +91,8 @@ void Estimator::clearState()
     tmp_pre_integration = nullptr;
     last_marginalization_info = nullptr;
     last_marginalization_parameter_blocks.clear();
+
+    ROS_INFO("Feature manager Clearing State");
 
     f_manager.clearState();
 
@@ -321,7 +330,7 @@ void Estimator::processMeasurements()
             printStatistics(*this, 0);
 
             std_msgs::Header header;
-            header.frame_id = "world";
+            header.frame_id = "crl_rzr/odom";
             header.stamp = ros::Time(feature.first);
 
             pubOdometry(*this, header);
@@ -554,13 +563,19 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
 
         if (failureDetection())
         {
+            health = false;
             ROS_WARN("failure detection!");
+            mProcess.unlock();
             failure_occur = 1;
             clearState();
+            ROS_WARN("Clear State Complete!");
             setParameter();
             ROS_WARN("system reboot!");
             return;
         }
+
+        // Once we are sure that there is no failure, set the health to true
+        health = true;
 
         slideWindow();
         f_manager.removeFailures();
@@ -953,12 +968,12 @@ void Estimator::double2vector()
 }
 
 bool Estimator::failureDetection()
-{
-    return false;
-    if (f_manager.last_track_num < 2)
+{   
+    ROS_INFO("Number of tracked features: %d", f_manager.last_track_num);
+    if (f_manager.last_track_num < 2) // Set it to 100
     {
         ROS_INFO(" little feature %d", f_manager.last_track_num);
-        //return true;
+        return true;
     }
     if (Bas[WINDOW_SIZE].norm() > 2.5)
     {
@@ -980,13 +995,13 @@ bool Estimator::failureDetection()
     Vector3d tmp_P = Ps[WINDOW_SIZE];
     if ((tmp_P - last_P).norm() > 5)
     {
-        //ROS_INFO(" big translation");
-        //return true;
+        ROS_INFO(" big translation");
+        return true;
     }
     if (abs(tmp_P.z() - last_P.z()) > 1)
     {
-        //ROS_INFO(" big z translation");
-        //return true; 
+        ROS_INFO(" big z translation");
+        return true; 
     }
     Matrix3d tmp_R = Rs[WINDOW_SIZE];
     Matrix3d delta_R = tmp_R.transpose() * last_R;
@@ -1252,7 +1267,10 @@ void Estimator::optimization()
             delete last_marginalization_info;
         last_marginalization_info = marginalization_info;
         last_marginalization_parameter_blocks = parameter_blocks;
-        
+        std::cout << "The max value of residuals is:\n" << last_marginalization_info->linearized_residuals.maxCoeff() << '\n';
+        std::cout << "The min value of residuals is:\n" << last_marginalization_info->linearized_residuals.minCoeff() << '\n';
+        std::cout << "The max value of jacobian:\n" << last_marginalization_info->linearized_jacobians.maxCoeff() << '\n';
+        std::cout << "The min value of jacobian:\n" << last_marginalization_info->linearized_jacobians.minCoeff() << '\n';
     }
     else
     {

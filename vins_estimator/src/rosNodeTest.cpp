@@ -30,6 +30,10 @@ queue<sensor_msgs::ImageConstPtr> img0_buf;
 queue<sensor_msgs::ImageConstPtr> img1_buf;
 std::mutex m_buf;
 
+ros::Publisher pub_health;
+
+// This variable is published to indicate the health of the system.
+static std_msgs::Bool healthMsg = std_msgs::Bool();
 
 void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
@@ -222,6 +226,12 @@ void cam_switch_callback(const std_msgs::BoolConstPtr &switch_msg)
     return;
 }
 
+// Function to publish healthMsg variable
+void pubHealth(const ros::TimerEvent& event) {
+    healthMsg.data = estimator.health;
+    pub_health.publish(healthMsg);
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "vins_estimator");
@@ -241,6 +251,10 @@ int main(int argc, char **argv)
 
     readParameters(config_file);
     estimator.setParameter();
+
+    estimator.health = false;
+    pub_health = n.advertise<std_msgs::Bool>("health", 1000);
+    ros::Timer healthTimer = n.createTimer(ros::Duration(0.01), pubHealth);
 
 #ifdef EIGEN_DONT_PARALLELIZE
     ROS_DEBUG("EIGEN_DONT_PARALLELIZE");

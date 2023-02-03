@@ -1,0 +1,5 @@
+<launch>
+    <!-- <include file="$(find vins)/launch/vins_rviz.launch" /> -->
+    <node name="rvizvisualisation" pkg="rviz" type="rviz" output="screen" args="-d $(find vins)/../config/vins_rviz_config.rviz" />
+    <node name="rzr_vins" pkg="vins" type="vins_node" output="screen" args="$(find vins)/../config/RACER/crl_rzr_front_stereo.yaml"/>
+</launch>

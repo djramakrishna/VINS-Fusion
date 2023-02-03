@@ -17,7 +17,7 @@ image_height: 600
 
 
 # Extrinsic parameter between IMU and Camera.
-estimate_extrinsic: 1   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
+estimate_extrinsic: 0   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
                         # 1  Have an initial guess about extrinsic parameters. We will optimize around your initial guess.
 
 # crl_rzr/base", "crl_rzr/multisense_front/left_camera_optical_frame"
@@ -45,9 +45,9 @@ multiple_thread: 1
 
 #feature traker paprameters
 max_cnt: 400            # max feature number in feature tracking
-min_dist: 5            # min distance between two features 
+min_dist: 20            # min distance between two features 
 freq: 0                # frequence (Hz) of publish tracking result. At least 10Hz for good estimation. If set 0, the frequence will be same as raw image 
-F_threshold: 3.0       # ransac threshold (pixel)
+F_threshold: 2.0       # ransac threshold (pixel)
 show_track: 1           # publish tracking image as topic
 flow_back: 1            # perform forward and backward optical flow to improve feature tracking accuracy
 

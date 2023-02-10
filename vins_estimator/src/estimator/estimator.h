@@ -37,12 +37,21 @@
 #include "../featureTracker/feature_tracker.h"
 
 
+extern ros::Publisher pub_acc_bias;
+extern ros::Publisher pub_gyro_bias;
+extern ros::Publisher pub_features_detected;
+extern ros::Publisher pub_translation;
+extern ros::Publisher pub_z_translation;
+
 class Estimator
 {
   public:
     Estimator();
     ~Estimator();
     void setParameter();
+
+    //Publish the parameters 
+    void registerParamPub(ros::NodeHandle &n);
 
     // interface
     void initFirstPose(Eigen::Vector3d p, Eigen::Matrix3d r);

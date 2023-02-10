@@ -10,6 +10,14 @@
 #include "estimator.h"
 #include "../utility/visualization.h"
 
+
+
+ros::Publisher pub_acc_bias;
+ros::Publisher pub_gyro_bias;
+ros::Publisher pub_features_detected;
+ros::Publisher pub_translation;
+ros::Publisher pub_z_translation;
+
 Estimator::Estimator(): f_manager{Rs}
 {
     ROS_INFO("init begins");
@@ -24,6 +32,15 @@ Estimator::~Estimator()
         processThread.join();
         printf("join thread \n");
     }
+}
+
+void Estimator::registerParamPub(ros::NodeHandle &n)
+{
+    pub_acc_bias = n.advertise<std_msgs::Float32>("acc_bias", 1000);
+    pub_gyro_bias = n.advertise<std_msgs::Float32>("gyro_bias", 1000);
+    pub_features_detected = n.advertise<std_msgs::Float32>("features_detected", 1000);
+    pub_translation = n.advertise<std_msgs::Float32>("translation", 1000);
+    pub_z_translation = n.advertise<std_msgs::Float32>("z_translation", 1000);
 }
 
 void Estimator::clearState()
@@ -969,8 +986,9 @@ void Estimator::double2vector()
 
 bool Estimator::failureDetection()
 {   
+
     ROS_INFO("Number of tracked features: %d", f_manager.last_track_num);
-    if (f_manager.last_track_num < 2) // Set it to 100
+    if (f_manager.last_track_num < 100) 
     {
         ROS_INFO(" little feature %d", f_manager.last_track_num);
         return true;
@@ -1013,6 +1031,26 @@ bool Estimator::failureDetection()
         ROS_INFO(" big delta_angle ");
         //return true;
     }
+    std_msgs::Float32 acc_bias_msg;
+    std_msgs::Float32 gyro_bias_msg;
+    std_msgs::Float32 features_detected_msg;
+    std_msgs::Float32 translation_msg;
+    std_msgs::Float32 z_translation_msg;
+
+    acc_bias_msg.data = Bas[WINDOW_SIZE].norm();
+    gyro_bias_msg.data = Bgs[WINDOW_SIZE].norm();
+    features_detected_msg.data = f_manager.last_track_num;
+    translation_msg.data = (tmp_P - last_P).norm();
+    z_translation_msg.data = (tmp_P.z() - last_P.z());
+
+    pub_acc_bias.publish(acc_bias_msg);
+    pub_gyro_bias.publish(gyro_bias_msg);
+    pub_features_detected.publish(features_detected_msg);
+    pub_translation.publish(translation_msg);
+    pub_z_translation.publish(z_translation_msg);
+
+
+
     return false;
 }
 

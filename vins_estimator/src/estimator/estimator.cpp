@@ -986,51 +986,8 @@ void Estimator::double2vector()
 
 bool Estimator::failureDetection()
 {   
-
-    ROS_INFO("Number of tracked features: %d", f_manager.last_track_num);
-    if (f_manager.last_track_num < 100) 
-    {
-        ROS_INFO(" little feature %d", f_manager.last_track_num);
-        return true;
-    }
-    if (Bas[WINDOW_SIZE].norm() > 2.5)
-    {
-        ROS_INFO(" big IMU acc bias estimation %f", Bas[WINDOW_SIZE].norm());
-        return true;
-    }
-    if (Bgs[WINDOW_SIZE].norm() > 1.0)
-    {
-        ROS_INFO(" big IMU gyr bias estimation %f", Bgs[WINDOW_SIZE].norm());
-        return true;
-    }
-    /*
-    if (tic(0) > 1)
-    {
-        ROS_INFO(" big extri param estimation %d", tic(0) > 1);
-        return true;
-    }
-    */
     Vector3d tmp_P = Ps[WINDOW_SIZE];
-    if ((tmp_P - last_P).norm() > 5)
-    {
-        ROS_INFO(" big translation");
-        return true;
-    }
-    if (abs(tmp_P.z() - last_P.z()) > 1)
-    {
-        ROS_INFO(" big z translation");
-        return true; 
-    }
-    Matrix3d tmp_R = Rs[WINDOW_SIZE];
-    Matrix3d delta_R = tmp_R.transpose() * last_R;
-    Quaterniond delta_Q(delta_R);
-    double delta_angle;
-    delta_angle = acos(delta_Q.w()) * 2.0 / 3.14 * 180.0;
-    if (delta_angle > 50)
-    {
-        ROS_INFO(" big delta_angle ");
-        //return true;
-    }
+
     std_msgs::Float32 acc_bias_msg;
     std_msgs::Float32 gyro_bias_msg;
     std_msgs::Float32 features_detected_msg;
@@ -1049,7 +1006,42 @@ bool Estimator::failureDetection()
     pub_translation.publish(translation_msg);
     pub_z_translation.publish(z_translation_msg);
 
+    if ((tmp_P - last_P).norm() > 5)
+    {
+        ROS_INFO("Large translation");
+        return true;
+    }
+    if (abs(tmp_P.z() - last_P.z()) > 1)
+    {
+        ROS_INFO("Large z translation");
+        return true; 
+    }
 
+    ROS_INFO("Number of tracked features: %d", f_manager.last_track_num);
+    
+    if (f_manager.last_track_num < 100) 
+    {
+        ROS_INFO("Less features tracked %d", f_manager.last_track_num);
+        return true;
+    }
+    if (Bas[WINDOW_SIZE].norm() > 2.5)
+    {
+        ROS_INFO(" big IMU acc bias estimation %f", Bas[WINDOW_SIZE].norm());
+        return true;
+    }
+    if (Bgs[WINDOW_SIZE].norm() > 1.0)
+    {
+        ROS_INFO(" big IMU gyr bias estimation %f", Bgs[WINDOW_SIZE].norm());
+        return true;
+    }
+
+    /*
+    if (tic(0) > 1)
+    {
+        ROS_INFO(" big extri param estimation %d", tic(0) > 1);
+        return true;
+    }
+    */
 
     return false;
 }
